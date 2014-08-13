@@ -74,7 +74,7 @@ io.on('connection', function (socket) {
     
   console.log("socketid is:"+socket.id+" joined");
   socket.emit('news', { hello: 'world' });
- 
+  socket.emit('tcpstate', { dat:'CONNECTED: ' + tcpaddress + ':' + tcpport });
 
   socket.on('join', function (data) {
     socketflag=0;
@@ -116,11 +116,14 @@ io.on('connection', function (socket) {
 var net = require('net');
 var dat,a;
 var firstdat = false;
+var tcpaddress;
+var tcpport;
 var tcpserver = net.createServer(function (socket) {
   // 新的连接
+  tcpaddress=socket.remoteAddress;
+  tcpport=socket.remotePort;
 
-
-   io.emit('tcpstate', { dat:'CONNECTED: ' + socket.remoteAddress + ':' + socket.remotePort });
+   
   console.log('CONNECTED: ' + socket.remoteAddress + ':' + socket.remotePort);
   //console.log(socket.id.toString());
   socket.on('data', function (data) {

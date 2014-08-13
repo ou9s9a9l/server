@@ -16,11 +16,13 @@
   <p id="socketstate"> </p>
   <p id="roomstate"> </p>
   <p id="tcpstate"> </p>
-  <textarea id="chat-window" rows="30"></textarea>
+  <textarea id="chat-window" rows="20"></textarea>
   <button id="平南" type="button" class="btn btn-lg btn-success" onclick=joinroom("平南")>进入平南</button>
   <button id="保定南" type="button" class="btn btn-lg btn-info" onclick=joinroom("保定南")>进入保定南</button>
   <button  type="button" class="btn btn-lg btn-info" onclick="cleartxt()">清空</button>
-
+  <button  type="button" class="btn btn-lg btn-info" onclick="setrows()">增加显示长度</button>
+  <button  type="button" class="btn btn-lg btn-info" onclick="clearrows()">设置清屏长度</button>
+  <p id="clearlen"> </p>
   <% include footer %>
  </body>
 </html>

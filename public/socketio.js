@@ -12,12 +12,23 @@
   function cleartxt(){
     document.getElementById("chat-window").value="";
   };
-
-  var a;
+  var x=20;
+  function setrows(){
+    if (x>50) x=20;x+=1;
+    var y = x.toString();
+    document.getElementById("chat-window").rows=y;
+  };
+    function clearrows(){
+    if(b>50)b=20;
+    b+=1;
+    var y = b.toString();
+    document.getElementById("clearlen").innerHTML=b;
+  };
+  var a,b=20;
   socket.on('updata', function (data) {
     var charvalue=document.getElementById("chat-window").value;
     if(document.getElementById("chat-window").value.length>0)
-      if(document.getElementById("chat-window").value.match(/\n/g).length>20)
+      if(document.getElementById("chat-window").value.match(/\n/g).length>b)
         document.getElementById("chat-window").value=" ";
     for(a=0;a<data.dat.length;a++)
     document.getElementById("chat-window").value+=data.dat[a]+" ";
