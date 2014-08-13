@@ -36,8 +36,7 @@
     console.log(data.dat.length);
   });
 socket.on('tcpstate', function(data){
-  if(data.dat=='close')document.getElementById("tcpstate").innerHTML='tcp关闭';
-   else document.getElementById("tcpstate").innerHTML=data.dat;
+  document.getElementById("tcpstate").innerHTML='tcp状态 ：'+data.dat;
   });
 
 socket.on('disconnect', function(){
