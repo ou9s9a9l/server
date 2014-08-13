@@ -120,15 +120,16 @@ var tcpserver = net.createServer(function (socket) {
   // 新的连接
 
 
-
-  console.log('CONNECTED: ' +
-        socket.remoteAddress + ':' + socket.remotePort);
+   io.emit('tcpstate', { dat:'CONNECTED: ' + socket.remoteAddress + ':' + socket.remotePort });
+  console.log('CONNECTED: ' + socket.remoteAddress + ':' + socket.remotePort);
   //console.log(socket.id.toString());
   socket.on('data', function (data) {
 
     socket.write("1");
 
-
+    socket.on('close', function(err) {
+    io.emit('tcpstate', { dat:'close'});
+    });
    array=new Array(data.length);
    for(a=0;a<data.length;a++)
     {

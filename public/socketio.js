@@ -15,13 +15,19 @@
 
   var a;
   socket.on('updata', function (data) {
-    if(document.getElementById("chat-window").value.length>5000)document.getElementById("chat-window").value=" ";
+    var charvalue=document.getElementById("chat-window").value;
+    if(document.getElementById("chat-window").value.length>0)
+      if(document.getElementById("chat-window").value.match(/\n/g).length>20)
+        document.getElementById("chat-window").value=" ";
     for(a=0;a<data.dat.length;a++)
     document.getElementById("chat-window").value+=data.dat[a]+" ";
     document.getElementById("chat-window").value+="\n";
     console.log(data.dat.length);
   });
-
+socket.on('tcpstate', function(data){
+  if(data.dat=='close')document.getElementById("tcpstate").innerHTML='tcp关闭';
+   else document.getElementById("tcpstate").innerHTML=data.dat;
+  });
 
 socket.on('disconnect', function(){
    document.getElementById("socketstate").innerHTML="服务器已断开"
