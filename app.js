@@ -132,6 +132,7 @@ var tcpserver = net.createServer(function (socket) {
 
     socket.on('close', function(err) {
     io.emit('tcpstate', { dat:'close'});
+    tcpaddress='';tcpport='';
     });
    array=new Array(data.length);
    for(a=0;a<data.length;a++)
