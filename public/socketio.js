@@ -47,5 +47,3 @@ socket.on('disconnect', function(){
     data.room[0]="已经进入的车站";
     document.getElementById("roomstate").innerHTML=data.room;
   });
-
- 
