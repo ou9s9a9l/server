@@ -98,6 +98,34 @@ io.on('connection', function (socket) {
   socket.on('disconnect', function(){
     console.log("socketid is:"+socket.id+" disconnect");
   });
+  socket.on('reset', function(){
+    if(resetflag)resetflag=0;
+    else resetflag=1;
+    console.log("reset is "+resetflag);
+  });
+  socket.on('update',function (data){  
+    console.log("2");
+    fs.readFile('public/adc.bin', function(err,data){
+   if(err){
+      console.error(err);
+   }else{
+    count=0;
+    data.copy(buf, 1, 0, buflen);
+    buf[0]=count;
+    len=data.length/buflen;
+    datlen=data.length;
+    console.log(buf);
+    console.log(data.length);
+    console.log(len);
+       }
+  });
+    
+   setTimeout(function(){
+    soc.write(buf);
+    console.log("3");
+   },1000);
+
+  })
 
   socket.on('request',function (data){
    //socket.in('平南').emit('updata', { hello: 'hello,平南' });  当前socket接收不到
@@ -112,14 +140,17 @@ io.on('connection', function (socket) {
 });
 
 
-
+var soc; 
 var net = require('net');
 var dat,a;
 var firstdat = false;
 var tcpstate='close';
+var buf1=new Buffer(1);
 var tcpserver = net.createServer(function (socket) {
   // 新的连接
-  tcpstate='open';
+  //\tcpsendserver.socket.write(0x31);
+ 
+
   io.emit('tcpstate', { dat:tcpstate});
   socket.on('close', function(err) {
     tcpstate='close';
@@ -166,3 +197,92 @@ tcpserver.listen(23, function () {
   console.log('server bound');
 });
 
+
+
+var fs = require('fs');
+var buflen=128;
+var buf=new Buffer(buflen+1);
+var buf1=new Buffer(buflen+1);
+var count=0;
+var len;
+var datlen;
+var delay=500;
+var resetflag=1;
+var tcpsendserver = net.createServer(function (socket) {
+  // 新的连接
+  console.log("1");
+    soc=socket;
+
+   socket.on('data', function (data) {
+    if(data[0]==0x0A&&data[1]==0x32)
+      {
+        if(resetflag)
+        setTimeout(function(){
+        console.log('re');
+        soc.write("2");
+        },100);
+      }
+    else if(data[0]==0x0A&&data[1]==0x30)
+      {count=0; 
+        console.log("success");
+        io.in('平南').emit('success', { dat:"1" });}
+    else if(data[0]==0x0A&&data[1]==0x31)
+    {
+    if(count<len-1)
+    {
+
+    if(data[0]==0x0A&&data[1]==0x31)
+      {
+        count++;
+           fs.readFile('public/adc.bin', function(err,data){
+           if(err){
+              console.error(err);
+            }else{
+            data.copy(buf, 1, count*buflen, (count+1)*buflen);
+            if (count>len-1) {
+              
+              for(var i=datlen-(count)*buflen;i<buflen+1;i++)
+                buf[i]=0;
+            }
+            buf[0]=count;
+            setTimeout(function(){
+             socket.write(buf);
+             console.log(buf);
+             },delay);
+       }
+     });
+      }
+
+    }
+   else
+    { 
+      
+      if(count%2==0)
+      { 
+        count++;
+        setTimeout(function(){
+        buf1[0]=count; 
+        for(a=1;a<129;a++)
+        buf1[a]=0xff;
+        socket.write(buf1);
+        console.log(buf1);
+       },delay);
+      }
+      else
+      {
+      buf[0]=0xff
+      setTimeout(function(){
+      socket.write(buf);
+      console.log(buf);
+      },delay);
+      count=-1;
+      }
+    }
+  }
+   });
+
+});
+  
+tcpsendserver.listen(5050, function () {
+  console.log('server 5050 bound');
+});

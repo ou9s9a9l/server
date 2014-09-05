@@ -1,14 +1,22 @@
   
   var ip_addr = document.location.hostname;
   var socket = io.connect(ip_addr);
+  var roomnumber='';
   socket.on('news', function (data) {
     document.getElementById("socketstate").innerHTML="服务器已连接"
   });
-
+  socket.on('success', function (data) {
+    console.log("success");
+  });
   function joinroom(roomnumber){
       socket.emit('join', { room:roomnumber });
   };
-
+  function update(){
+      socket.emit('update', { room:"1" });
+  };
+  function reset(){
+      socket.emit('reset', { room:"1" });
+  };
   function cleartxt(){
     document.getElementById("chat-window").value="";
   };
@@ -47,3 +55,8 @@ socket.on('disconnect', function(){
     data.room[0]="已经进入的车站";
     document.getElementById("roomstate").innerHTML=data.room;
   });
+
+
+
+  //setTimeout("console.log(a);", 1000);
+
