@@ -112,11 +112,12 @@ io.on('connection', function (socket) {
     count=0;
     data.copy(buf, 1, 0, buflen);
     buf[0]=count;
-    len=data.length/buflen;
+    len= parseInt(data.length/buflen);
     datlen=data.length;
     console.log(buf);
     console.log(data.length);
-    console.log(len);
+   // console.log(len);
+    io.emit('success', { dat:"3秒后开始升级 文件块数："+len })
        }
   });
     
@@ -210,22 +211,21 @@ var delay=50;
 var resetflag=1;
 var tcpsendserver = net.createServer(function (socket) {
   // 新的连接
-  console.log("1");
+  io.emit('success', { dat:"connected" })
     soc=socket;
-
    socket.on('data', function (data) {
-    if(data[0]==0x0A&&data[1]==0x32)
+    if(data[0]==0x0A&&data[1]==0x33)
       {
         if(resetflag)
         setTimeout(function(){
-        console.log('re');
+        io.emit('success', { dat:"recieve" })
         soc.write("2");
         },100);
       }
     else if(data[0]==0x0A&&data[1]==0x30)
       {count=0; 
         console.log("success");
-        io.in('平南').emit('success', { dat:"1" });}
+        io.emit('success', { dat:"success" });}
     else if(data[0]==0x0A&&data[1]==0x31)
     {
     if(count<len-1)
@@ -247,7 +247,8 @@ var tcpsendserver = net.createServer(function (socket) {
             buf[0]=count;
             setTimeout(function(){
              socket.write(buf);
-             console.log(buf);
+         //    console.log(buf);
+             io.emit('success', { dat:count+"/"+len })
              },delay);
        }
      });
@@ -273,7 +274,7 @@ var tcpsendserver = net.createServer(function (socket) {
       buf[0]=0xff
       setTimeout(function(){
       socket.write(buf);
-      console.log(buf);
+     // console.log(buf);
       },delay);
       count=-1;
       }

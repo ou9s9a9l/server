@@ -6,7 +6,7 @@
     document.getElementById("socketstate").innerHTML="服务器已连接"
   });
   socket.on('success', function (data) {
-    console.log("success");
+    console.log(data.dat);
   });
   function joinroom(roomnumber){
       socket.emit('join', { room:roomnumber });
