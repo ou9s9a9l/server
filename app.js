@@ -206,7 +206,7 @@ var buf1=new Buffer(buflen+1);
 var count=0;
 var len;
 var datlen;
-var delay=500;
+var delay=50;
 var resetflag=1;
 var tcpsendserver = net.createServer(function (socket) {
   // 新的连接
