@@ -14,11 +14,12 @@ var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
 
-
+var multer = require('multer');
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
+app.use(bodyParser());
 app.use(favicon());
 app.use(logger('dev'));
 app.use(bodyParser.json());
@@ -29,9 +30,20 @@ app.use(function(req,res,next){
     console.log("%s %s",req.method,req.url);
     next();
 });
+
+app.use(multer({ 
+  dest:'./public',
+  rename: function (fieldname, filename) {
+  return 'adc'
+  }
+ }));
+
+
+
 app.use('/', routes);
 app.use('/subform', subform);
 app.use('/usecookies', usecookies);
+
 
 
 /// catch 404 and forward to error handler
@@ -64,6 +76,7 @@ app.use(function(err, req, res, next) {
         error: {}
     });
 });
+
 
 server.listen(80);
 //module.exports = app;
@@ -101,7 +114,8 @@ io.on('connection', function (socket) {
   socket.on('reset', function(){
     if(resetflag)resetflag=0;
     else resetflag=1;
-    console.log("reset is "+resetflag);
+   // console.log("reset is "+resetflag);
+    io.emit('success', { dat:"reset is "+resetflag })
   });
   socket.on('update',function (data){  
     console.log("2");
