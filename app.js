@@ -242,11 +242,13 @@ var tcpsendserver = net.createServer(function (socket) {
         io.emit('success', { dat:"success" });}
     else if(data[0]==0x0A&&data[1]==0x31)
     {
-    if(count<len-1)
+    if(count<len)
     {
 
     if(data[0]==0x0A&&data[1]==0x31)
       {
+        console.log(count+'   '+(len-1));
+
         count++;
            fs.readFile('public/adc.bin', function(err,data){
            if(err){
@@ -256,10 +258,11 @@ var tcpsendserver = net.createServer(function (socket) {
             if (count>len-1) {
               
               for(var i=datlen-(count)*buflen;i<buflen+1;i++)
-                buf[i]=0;
+                buf[i]=0xff;
             }
             buf[0]=count;
             setTimeout(function(){
+              console.log(buf);
              socket.write(buf);
          //    console.log(buf);
              io.emit('success', { dat:count+"/"+len })
@@ -285,6 +288,7 @@ var tcpsendserver = net.createServer(function (socket) {
       }
       else
       {
+      console.log("end");
       buf[0]=0xff
       setTimeout(function(){
       socket.write(buf);
@@ -294,6 +298,7 @@ var tcpsendserver = net.createServer(function (socket) {
       }
     }
   }
+  
    });
 
 });
