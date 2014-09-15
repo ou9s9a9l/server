@@ -221,6 +221,7 @@ var buf1=new Buffer(buflen+1);
 var count=0;
 var len;
 var datlen;
+var count1;
 var delay=50;
 var resetflag=1;
 var tcpsendserver = net.createServer(function (socket) {
@@ -228,25 +229,34 @@ var tcpsendserver = net.createServer(function (socket) {
   io.emit('success', { dat:"connected" })
     soc=socket;
    socket.on('data', function (data) {
-    if(data[0]==0x0A&&data[1]==0x33)
+    if(data[0]==0x0A&&data[1]==0x34&&data[2]!=count1)//数据
+    {
+        count1=data[2];
+        console.log(data);
+        array=new Array(data.length-2);
+        for(a=0;a<data.length-2;a++)
+        {
+        array[a]=data[a+2];
+        }
+        io.in('保定南').emit('updata', { dat:array });
+    }
+    if(data[0]==0x0A&&data[1]==0x33)//心跳
       {
+        
         if(resetflag)
         setTimeout(function(){
         io.emit('success', { dat:"recieve" })
         soc.write("2");
         },100);
       }
-    else if(data[0]==0x0A&&data[1]==0x30)
+    else if(data[0]==0x0A&&data[1]==0x30)//send complete
       {count=0; 
         console.log("success");
         io.emit('success', { dat:"success" });}
-    else if(data[0]==0x0A&&data[1]==0x31)
+    else if(data[0]==0x0A&&data[1]==0x31)//send success .  next pack
     {
     if(count<len)
     {
-
-    if(data[0]==0x0A&&data[1]==0x31)
-      {
         console.log(count+'   '+(len-1));
 
         count++;
@@ -256,7 +266,6 @@ var tcpsendserver = net.createServer(function (socket) {
             }else{
             data.copy(buf, 1, count*buflen, (count+1)*buflen);
             if (count>len-1) {
-              
               for(var i=datlen-(count)*buflen;i<buflen+1;i++)
                 buf[i]=0xff;
             }
@@ -267,9 +276,9 @@ var tcpsendserver = net.createServer(function (socket) {
          //    console.log(buf);
              io.emit('success', { dat:count+"/"+len })
              },delay);
-       }
+                }
      });
-      }
+      
 
     }
    else
