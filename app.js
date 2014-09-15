@@ -233,11 +233,13 @@ var tcpsendserver = net.createServer(function (socket) {
     {
         count1=data[2];
         console.log(data);
-        array=new Array(data.length-2);
+        array=new Array(data.length);
         for(a=0;a<data.length-2;a++)
         {
         array[a]=data[a+2];
         }
+        array[data.length-1]=0;
+        array[data.length-2]=0;
         io.in('保定南').emit('updata', { dat:array });
     }
     if(data[0]==0x0A&&data[1]==0x33)//心跳
