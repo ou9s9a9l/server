@@ -222,6 +222,7 @@ var count=0;
 var len;
 var datlen;
 var count1;
+var count2;
 var delay=50;
 var resetflag=1;
 var tcpsendserver = net.createServer(function (socket) {
@@ -244,10 +245,10 @@ var tcpsendserver = net.createServer(function (socket) {
     }
     if(data[0]==0x0A&&data[1]==0x33)//心跳
       {
-        
         if(resetflag)
         setTimeout(function(){
-        io.emit('success', { dat:"recieve" })
+        count2++;
+        io.emit('success', { dat:count2 })
         soc.write("2");
         },100);
       }
