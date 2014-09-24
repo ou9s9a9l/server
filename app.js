@@ -8,6 +8,9 @@ var bodyParser = require('body-parser');
 var routes = require('./routes/index');
 var subform = require('./routes/subform');
 var usecookies = require('./routes/usecookies');
+var tcpserver = require('./net/net')
+
+
 
 
 var app = express();
@@ -82,7 +85,7 @@ server.listen(80);
 //module.exports = app;
 var a=0;
 var socketflag;
-
+var tcpstate='close';
 io.on('connection', function (socket) {
     
   console.log("socketid is:"+socket.id+" joined");
@@ -153,67 +156,16 @@ io.on('connection', function (socket) {
     
  
 });
+var so;
+tcpserver(io,23,so);
+
+  
+//tcpserver.listen(23, function () {
+//  console.log('server bound');
+//});
 
 
-var soc; 
 var net = require('net');
-var dat,a;
-var firstdat = false;
-var tcpstate='close';
-var buf1=new Buffer(1);
-var tcpserver = net.createServer(function (socket) {
-  // 新的连接
-  //\tcpsendserver.socket.write(0x31);
- 
-
-  io.emit('tcpstate', { dat:tcpstate});
-  socket.on('close', function(err) {
-    tcpstate='close';
-    io.emit('tcpstate', { dat:tcpstate});
-    });
-  console.log('CONNECTED: ' + socket.remoteAddress + ':' + socket.remotePort);
-  //console.log(socket.id.toString());
-  socket.on('data', function (data) {
-
-    socket.write("1");
-   
-   array=new Array(data.length);
-   for(a=0;a<data.length;a++)
-    {
-      array[a]=data[a];
-      array[a]=array[a].toString(16);
-      if(array[a]=="0"||
-        array[a]=="1"||
-        array[a]=="2"||
-        array[a]=="3"||
-        array[a]=="4"||
-        array[a]=="5"||
-        array[a]=="6"||
-        array[a]=="7"||
-        array[a]=="8"||
-        array[a]=="9"||
-        array[a]=="a"||
-        array[a]=="b"||
-        array[a]=="c"||
-        array[a]=="d"||
-        array[a]=="e"||
-        array[a]=="f")
-        array[a]="0"+ array[a];
-     // if (array[a]==",") array[a]=" ";
-    }
-    io.in('平南').emit('updata', { dat:array });
-    console.log(array.length);
-  
-    
-  });
-});
-  
-tcpserver.listen(23, function () {
-  console.log('server bound');
-});
-
-
-
 var fs = require('fs');
 var buflen=128;
 var buf=new Buffer(buflen+1);
@@ -227,6 +179,7 @@ var delay=50;
 var resetflag=1;
 var tcpsendserver = net.createServer(function (socket) {
   // 新的连接
+  
   io.emit('success', { dat:"connected" })
     soc=socket;
    socket.on('data', function (data) {
@@ -235,11 +188,13 @@ var tcpsendserver = net.createServer(function (socket) {
         count1=data[2];
         console.log(data);
         array=new Array(data.length-2);
-        for(a=0;a<data.length-2;a++)
+        array[0]=data[2];
+        for(a=1;a<data.length-2;a++)
         {
-        array[a]=data[a+2];
+       // array[a]=data[a+2];
+        array[a]=res[data[a+2]];
         }
-        io.in('保定南').emit('updata', { dat:array });
+        io.emit('updata', { dat:array });
     }
     if(data[0]==0x0A&&data[1]==0x33)//心跳
       {
@@ -254,12 +209,14 @@ var tcpsendserver = net.createServer(function (socket) {
       {count=0; 
         console.log("success");
         io.emit('success', { dat:"success" });}
-    else if(data[0]==0x0A&&data[1]==0x31)//send success .  next pack
+
+
+
+    if(data[0]==0x0A&&data[1]==0x31)//send success .  next pack
     {
     if(count<len)
     {
         console.log(count+'   '+(len-1));
-
         count++;
            fs.readFile('public/adc.bin', function(err,data){
            if(err){
@@ -267,7 +224,7 @@ var tcpsendserver = net.createServer(function (socket) {
             }else{
             data.copy(buf, 1, count*buflen, (count+1)*buflen);
             if (count>len-1) {
-              for(var i=datlen-(count)*buflen;i<buflen+1;i++)
+              for(var i=datlen-(count)*buflen+1;i<buflen+1;i++)
                 buf[i]=0xff;
             }
             buf[0]=count;
@@ -278,10 +235,9 @@ var tcpsendserver = net.createServer(function (socket) {
              io.emit('success', { dat:count+"/"+len })
              },delay);
                 }
-     });
-      
-
+            });
     }
+
    else
     { 
       
@@ -307,8 +263,12 @@ var tcpsendserver = net.createServer(function (socket) {
       count=-1;
       }
     }
+
   }
   
+
+
+
    });
 
 });
@@ -316,3 +276,282 @@ var tcpsendserver = net.createServer(function (socket) {
 tcpsendserver.listen(5050, function () {
   console.log('server 5050 bound');
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+var res=[" ",
+"下行1道发车信号开放",
+"下行2道发车信号开放",
+"下行3道发车信号开放",
+"下行4道发车信号开放",
+"下行5道发车信号开放",
+"下行6道发车信号开放",
+"下行7道发车信号开放",
+"下行8道发车信号开放",
+"下行9道发车信号开放",
+"下行10道发车信号开放",
+"下行11道发车信号开放",
+"下行12道发车信号开放",
+"下行13道发车信号开放",
+"下行14道发车信号开放",
+"下行15道发车信号开放",
+"下行16道发车信号开放",
+"下行17道发车信号开放",
+"下行18道发车信号开放",
+"下行19道发车信号开放",
+"下行20道发车信号开放",
+"下行1道接车信号开放",
+"下行2道接车信号开放",
+"下行3道接车信号开放",
+"下行4道接车信号开放",
+"下行5道接车信号开放",
+"下行6道接车信号开放",
+"下行7道接车信号开放",
+"下行8道接车信号开放",
+"下行9道接车信号开放",
+"下行10道接车信号开放",
+"下行11道接车信号开放",
+"下行12道接车信号开放",
+"下行13道接车信号开放",
+"下行14道接车信号开放",
+"下行15道接车信号开放",
+"下行16道接车信号开放",
+"下行17道接车信号开放",
+"下行18道接车信号开放",
+"下行19道接车信号开放",
+"下行20道接车信号开放",
+"下行1道通过车信号开放",
+"下行2道通过车信号开放",
+"下行3道通过车信号开放",
+"下行4道通过车信号开放",
+"下行5道通过车信号开放",
+"下行6道通过车信号开放",
+"下行7道通过车信号开放",
+"下行8道通过车信号开放",
+"下行9道通过车信号开放",
+"下行10道通过车信号开放",
+"下行11道通过车信号开放",
+"下行12道通过车信号开放",
+"下行13道通过车信号开放",
+"下行14道通过车信号开放",
+"下行15道通过车信号开放",
+"下行16道通过车信号开放",
+"下行17道通过车信号开放",
+"下行18道通过车信号开放",
+"下行19道通过车信号开放",
+"下行20道通过车信号开放",
+"进1道停车",
+"进2道停车",
+"进3道停车",
+"进4道停车",
+"进5道停车",
+"进6道停车",
+"进7道停车",
+"进8道停车",
+"进9道停车",
+"进10道停车",
+"进11道停车",
+"进12道停车",
+"进13道停车",
+"进14道停车",
+"进15道停车",
+"进16道停车",
+"进17道停车",
+"进18道停车",
+"进19道停车",
+"进20道停车",
+"经1道通过",
+"经2道通过",
+"经3道通过",
+"经4道通过",
+"经5道通过",
+"经6道通过",
+"经7道通过",
+"经8道通过",
+"经9道通过",
+"经10道通过",
+"经11道通过",
+"经12道通过",
+"经13道通过",
+"经14道通过",
+"经15道通过",
+"经16道通过",
+"经17道通过",
+"经18道通过",
+"经19道通过",
+"经20道通过",
+"上行1道发车信号开放",
+"上行2道发车信号开放",
+"上行3道发车信号开放",
+"上行4道发车信号开放",
+"上行5道发车信号开放",
+"上行6道发车信号开放",
+"上行7道发车信号开放",
+"上行8道发车信号开放",
+"上行9道发车信号开放",
+"上行10道发车信号开放",
+"上行11道发车信号开放",
+"上行12道发车信号开放",
+"上行13道发车信号开放",
+"上行14道发车信号开放",
+"上行15道发车信号开放",
+"上行16道发车信号开放",
+"上行17道发车信号开放",
+"上行18道发车信号开放",
+"上行19道发车信号开放",
+"上行20道发车信号开放",
+"上行1道接车信号开放",
+"上行2道接车信号开放",
+"上行3道接车信号开放",
+"上行4道接车信号开放",
+"上行5道接车信号开放",
+"上行6道接车信号开放",
+"上行7道接车信号开放",
+"上行8道接车信号开放",
+"上行9道接车信号开放",
+"上行10道接车信号开放",
+"上行11道接车信号开放",
+"上行12道接车信号开放",
+"上行13道接车信号开放",
+"上行14道接车信号开放",
+"上行15道接车信号开放",
+"上行16道接车信号开放",
+"上行17道接车信号开放",
+"上行18道接车信号开放",
+"上行19道接车信号开放",
+"上行20道接车信号开放",
+"上行1道通过车信号开放",
+"上行2道通过车信号开放",
+"上行3道通过车信号开放",
+"上行4道通过车信号开放",
+"上行5道通过车信号开放",
+"上行6道通过车信号开放",
+"上行7道通过车信号开放",
+"上行8道通过车信号开放",
+"上行9道通过车信号开放",
+"上行10道通过车信号开放",
+"上行11道通过车信号开放",
+"上行12道通过车信号开放",
+"上行13道通过车信号开放",
+"上行14道通过车信号开放",
+"上行15道通过车信号开放",
+"上行16道通过车信号开放",
+"上行17道通过车信号开放",
+"上行18道通过车信号开放",
+"上行19道通过车信号开放",
+"上行20道通过车信号开放",
+"进1道停车",
+"进2道停车",
+"进3道停车",
+"进4道停车",
+"进5道停车",
+"进6道停车",
+"进7道停车",
+"进8道停车",
+"进9道停车",
+"进10道停车",
+"进11道停车",
+"进12道停车",
+"进13道停车",
+"进14道停车",
+"进15道停车",
+"进16道停车",
+"进17道停车",
+"进18道停车",
+"进19道停车",
+"进20道停车",
+"经1道通过",
+"经2道通过",
+"经3道通过",
+"经4道通过",
+"经5道通过",
+"经6道通过",
+"经7道通过",
+"经8道通过",
+"经9道通过",
+"经10道通过",
+"经11道通过",
+"经12道通过",
+"经13道通过",
+"经14道通过",
+"经15道通过",
+"经16道通过",
+"经17道通过",
+"经18道通过",
+"经19道通过",
+"经20道通过",
+"下行列车1接近",
+"下行列车1接近",
+"下行列车1接近",
+"下行列车进站",
+"下行列车1离去",
+"下行列车1离去",
+"下行列车1离去",
+"空",
+"空",
+"空",
+"上行列车1接近",
+"上行列车1接近",
+"上行列车1接近",
+"上行列车进站",
+"上行列车1离去",
+"上行列车1离去",
+"上行列车1离去",
+"空",
+"空",
+"空",
+"空",
+"空",
+"空",
+"空",
+"空",
+"空",
+"空",
+"空",
+"空",
+"空",
+"空",
+"空",
+"空",
+"空",
+"空",
+"空",
+"空",
+"空",
+"空",
+"空",
+"空",
+"空",
+"空",
+"空",
+"空",
+"空",
+"空",
+"空",
+"空",
+"空",
+"空",
+"空",
+"平南女",
+"平南男",
+]
