@@ -186,15 +186,18 @@ var tcpsendserver = net.createServer(function (socket) {
     if(data[0]==0x0A&&data[1]==0x34&&data[2]!=count1)//数据
     {
         count1=data[2];
-        console.log(data);
+        
         array=new Array(data.length-2);
+        array1=new Array(data.length-2);
         array[0]=data[2];
+        array1[0]=data[2];
         for(a=1;a<data.length-2;a++)
         {
-       // array[a]=data[a+2];
+        array1[a]=data[a+2];
         array[a]=res[data[a+2]];
         }
-        io.emit('updata', { dat:array });
+        console.log(array+array1);
+        io.emit('updata', { dat:array+array1 });
     }
     if(data[0]==0x0A&&data[1]==0x33)//心跳
       {
@@ -276,8 +279,6 @@ var tcpsendserver = net.createServer(function (socket) {
 tcpsendserver.listen(5050, function () {
   console.log('server 5050 bound');
 });
-
-
 
 
 

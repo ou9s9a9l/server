@@ -13,12 +13,13 @@ net.createServer(function (socket) {
  
   tcpstate='close';
   io.emit('tcpstate', { dat:tcpstate});
-  socket.on('close', function(err) {
+ 
+  console.log('CONNECTED: ' + socket.remoteAddress + ':' + socket.remotePort);
+  //console.log(socket.id.toString());
+   socket.on('close', function(err) {
     tcpstate='close';
     io.emit('tcpstate', { dat:tcpstate});
     });
-  console.log('CONNECTED: ' + socket.remoteAddress + ':' + socket.remotePort);
-  //console.log(socket.id.toString());
   socket.on('data', function (data) {
     soa=socket;
 
@@ -49,7 +50,7 @@ net.createServer(function (socket) {
      // if (array[a]==",") array[a]=" ";
     }
     io.in('平南').emit('updata', { dat:array });
-    console.log(array.length);
+//    console.log(array.length);
   
     
   });
