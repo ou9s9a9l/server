@@ -4,24 +4,17 @@ var favicon = require('static-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-
 var routes = require('./routes/index');
 var subform = require('./routes/subform');
 var usecookies = require('./routes/usecookies');
-var tcpserver = require('./net/net')
-
-
-
-
+var tcpserver = require('./net/net');
 var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
-
 var multer = require('multer');
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
-
 app.use(bodyParser());
 app.use(favicon());
 app.use(logger('dev'));
@@ -33,31 +26,22 @@ app.use(function(req,res,next){
     console.log("%s %s",req.method,req.url);
     next();
 });
-
-app.use(multer({ 
+app.use(multer({
   dest:'./public',
   rename: function (fieldname, filename) {
   return 'adc'
   }
  }));
-
-
-
 app.use('/', routes);
 app.use('/subform', subform);
 app.use('/usecookies', usecookies);
-
-
-
 /// catch 404 and forward to error handler
 app.use(function(req, res, next) {
-    var err = new Error('Not Found');
+     var err = new Error('Not Found');
     err.status = 404;
     next(err);
 });
-
 /// error handlers
-
 // development error handler
 // will print stacktrace
 if (app.get('env') === 'development') {
@@ -69,7 +53,6 @@ if (app.get('env') === 'development') {
         });
     });
 }
-
 // production error handler
 // no stacktraces leaked to user
 app.use(function(err, req, res, next) {
@@ -79,24 +62,22 @@ app.use(function(err, req, res, next) {
         error: {}
     });
 });
-
-
 server.listen(80);
 //module.exports = app;
 var a=0;
 var socketflag;
 var tcpstate='close';
 io.on('connection', function (socket) {
-    
   console.log("socketid is:"+socket.id+" joined");
   socket.emit('news', { hello: 'world' });
   socket.emit('tcpstate', { dat:tcpstate });
 
-  socket.on('join', function (data) {
+
+  
+ socket.on('join', function (data) {
     socketflag=0;
     for(a=0;a<socket.rooms.length;a++)
       if(socket.rooms[a]==data.room)socketflag=1;
-
    if(socketflag)
      socket.leave(data.room,function(){
        socket.emit('roomsin',{room:socket.rooms});
@@ -107,9 +88,9 @@ io.on('connection', function (socket) {
        console.log(socket.id+" joined "+socket.rooms[socket.rooms.length-1]);
        socket.emit('roomsin',{room:socket.rooms});
     });
-  
-   
   });
+
+
 
   socket.on('disconnect', function(){
     console.log("socketid is:"+socket.id+" disconnect");
@@ -120,73 +101,68 @@ io.on('connection', function (socket) {
    // console.log("reset is "+resetflag);
     io.emit('success', { dat:"reset is "+resetflag })
   });
-  socket.on('update',function (data){  
+  socket.on('update1', function(dat){
+   // UpdateServer.creatserver(io);
+  // socket.write("0");
+   if (socket.rooms[1]!=undefined)
+   eval("Server"+socket.rooms[1]+".setflag(io,'"+dat.dat+"')");
+  });
+  socket.on('update',function (data){
     console.log("2");
     fs.readFile('public/adc.bin', function(err,data){
    if(err){
       console.error(err);
    }else{
-    count=0;
-    data.copy(buf, 1, 0, buflen);
+   count=0;
+   data.copy(buf, 1, 0, buflen);
     buf[0]=count;
-    len= parseInt(data.length/buflen);
-    datlen=data.length;
     console.log(buf);
-    console.log(data.length);
    // console.log(len);
-    io.emit('success', { dat:"3秒后开始升级 文件块数："+len })
-       }
-  });
-    
+    io.emit('success', { dat:"3秒秒后后开开始始升升级级 " })
+    }
+    });
    setTimeout(function(){
     soc.write(buf);
     console.log("3");
    },1000);
-
-  })
-
-  socket.on('request',function (data){
-   //socket.in('平南').emit('updata', { hello: 'hello,平南' });  当前socket接收不到
-    io.in('平南').emit('updata', { dat: 'hello,平南' });
-    io.in('保定南').emit('updata', { dat: 'hello,保定南' });
-  
-     console.log(data);
-  });
-  
-    
- 
+    })
+ var buf=new Buffer(buflen+1);
 });
-var so;
-tcpserver(io,23,so);
-
-  
+var UpdateServer = require('./net/updatenet');
+var ServerBDN = new UpdateServer(io,25252,'BDN');
+var ServerSJZ = new UpdateServer(io,30000,'SJZ');
+var so,sod;
+//tcpserver.set23(io,23,'PNZ');
+//tcpserver.set7070();
 //tcpserver.listen(23, function () {
 //  console.log('server bound');
 //});
-
-
+var soc;
+var writeable=0;
 var net = require('net');
 var fs = require('fs');
 var buflen=128;
+var resetflag1=1;
+var tcpsendserver = net.createServer(function (socket) {
+  // 新新的的连连接接
+var count=0;
+        var len;
+        var datlen;
+        var count1;
+        var count2=0;
+        var delay=50;
 var buf=new Buffer(buflen+1);
 var buf1=new Buffer(buflen+1);
-var count=0;
-var len;
-var datlen;
-var count1;
-var count2=0;
-var delay=50;
-var resetflag=1;
-var tcpsendserver = net.createServer(function (socket) {
-  // 新的连接
-  
-  io.emit('success', { dat:"connected" })
+   fs.readFile('public/adc.bin', function(err,data){
+    len= parseInt(data.length/buflen);
+    datlen=data.length;
+    });
+    io.emit('success', { dat:"connected" })
     soc=socket;
    socket.on('data', function (data) {
-    if(data[0]==0x0A&&data[1]==0x34&&data[2]!=count1)//数据
+     if(data[0]==0x0A&&data[1]==0x34&&data[2]!=count1)//数数据据
     {
         count1=data[2];
-        
         array=new Array(data.length-2);
         array1=new Array(data.length-2);
         array[0]=data[2];
@@ -197,26 +173,27 @@ var tcpsendserver = net.createServer(function (socket) {
         array[a]=res[data[a+2]];
         }
         console.log(array+array1);
-        io.emit('updata', { dat:array+array1 });
+        var myDate = new Date();
+        var mytime=myDate.toLocaleString();
+        console.log(mytime);
+        io.in('PNZ').emit('upload', { dat:array+array1 });
     }
-    if(data[0]==0x0A&&data[1]==0x33)//心跳
+    if(data[0]==0x0A&&data[1]==0x33)//心心跳跳
       {
-        if(resetflag)
+        if(resetflag1)
         setTimeout(function(){
         count2++;
-        io.emit('success', { dat:count2 })
+        io.in('PNZ').emit('success', { dat:count2 })
         soc.write("2");
         },100);
       }
     else if(data[0]==0x0A&&data[1]==0x30)//send complete
-      {count=0; 
+      {count=0;
         console.log("success");
         io.emit('success', { dat:"success" });}
-
-
-
     if(data[0]==0x0A&&data[1]==0x31)//send success .  next pack
     {
+        console.log('count='+count);
     if(count<len)
     {
         console.log(count+'   '+(len-1));
@@ -227,7 +204,7 @@ var tcpsendserver = net.createServer(function (socket) {
             }else{
             data.copy(buf, 1, count*buflen, (count+1)*buflen);
             if (count>len-1) {
-              for(var i=datlen-(count)*buflen+1;i<buflen+1;i++)
+                 for(var i=datlen-(count)*buflen+1;i<buflen+1;i++)
                 buf[i]=0xff;
             }
             buf[0]=count;
@@ -240,15 +217,13 @@ var tcpsendserver = net.createServer(function (socket) {
                 }
             });
     }
-
    else
-    { 
-      
+    {
       if(count%2==0)
-      { 
+      {
         count++;
         setTimeout(function(){
-        buf1[0]=count; 
+        buf1[0]=count;
         for(a=1;a<129;a++)
         buf1[a]=0xff;
         socket.write(buf1);
@@ -266,35 +241,9 @@ var tcpsendserver = net.createServer(function (socket) {
       count=-1;
       }
     }
-
   }
-  
-
-
-
    });
-
 });
-  
-tcpsendserver.listen(5050, function () {
-  console.log('server 5050 bound');
-});
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -521,14 +470,14 @@ var res=[" ",
 "空",
 "空",
 "空",
+"南站列车一接近",
+"南站列车二接近",
+"南站列车三接近",
 "空",
 "空",
-"空",
-"空",
-"空",
-"空",
-"空",
-"空",
+"南站列车一离去",
+"南站列车二离去",
+"南站列车三离去",
 "空",
 "空",
 "空",
@@ -555,4 +504,4 @@ var res=[" ",
 "空",
 "平南女",
 "平南男",
-]
+];
